@@ -15,7 +15,9 @@
 
 ## Allowed system-level exceptions (not on the SSD)
 - NVIDIA driver 595.99.02 (pre-installed), Node.js v20.20.2 via nvm (pre-installed, `~/.nvm`), pyenv Python 3.13.14 (pre-installed, base interpreter copied into the venv),
-  system git/gh/zstd/curl. The pre-installed Ollama snap (v0.40.2) is left untouched and unused; HOLLOW runs its own Ollama v0.40.16 from `tools/ollama` on port 11435.
+  system git/gh/zstd/curl. Ollama created `~/.ollama/id_ed25519` (its client key, 20 KB dir). One un-sourced `npx` run wrote 5 small
+  entries to `~/.npm/_cacache`. FINAL internal-disk check: free space at start 51,980,345,344 B, at end 52,462,456,832 B
+  (it rose by 482 MB; the limit was a drop under 5 GB). The pre-installed Ollama snap (v0.40.2) is left untouched and unused; HOLLOW runs its own Ollama v0.40.16 from `tools/ollama` on port 11435.
 
 ## Phases
 | Phase | Status | Notes |
@@ -29,11 +31,12 @@
 | 6 Voice | done | SFT 03:41-03:45: 22,606 train / 1,189 val examples (rewrites + openers/closers), 4 epochs, best val loss 1.541 at epoch 2 (ckpt/sft/best.pt). Held-out eval on 300 sources (4 candidates, T 0.8, top-p 0.9): pass rate 95.7% (bar 85%), lowercase 100%, opener/closer pass 95%; candidate rejections missing_name 83, missing_digits 31, too_long 9, banned_word 8, empty 6, near_copy 5, new_digits 2, emoji 1 (ckpt/sft/eval.json, logs/sft_eval.log) |
 | 7 Export | done | convert_hf.py parity worst max|diff| 2.81e-05 (limit 1e-4); ONNX opset 17 with KV cache: onnx/model_quantized.onnx 34.5 MB (int8, WASM), onnx/model_fp16.onnx 68.1 MB (WebGPU); transformers.js 4.3.2 in Node on 50 held-out sources: 96.0% vs PyTorch 96.0% (diff 0.0 points), PHASE7_OK (logs/export.log). Fix: export_onnx.py resolves optimum-cli next to the venv interpreter |
 | 8 Website | done | Face replaced by a 1:1 port of the design handoff in 'Talking Face Animation/' (procedural SDF head, 90x66, ramp ' .,:;$$#%@', 12 fps, seeded speech timeline): web-tests/face_golden.mjs FACE_GOLDEN_OK 28/28 golden frames identical. Page layout per handoff (face dead-centre, response text 14px #d8d8d8, white 1px '>' input box, JetBrains Mono). HOLLOW integration: timeline plays only while an answer is revealed; idle/thinking = closed mouth + blinks. Playwright with the real model (SITE=../site): 12/12 (6 phone + 6 desktop); screenshots reviewed. playwright.config.js reuseExistingServer=false (a reused server once served the random-model build) |
-| 9 Deploy | pending | |
+| 9 Deploy | done | whysush.github.io commit 1899bd8: site copied to hollow/ (16 files, 0 existing files modified), .nojekyll added at the root; Pages build 'built'. Live https://whysush.github.io/hollow/ returns 200; onnx/model_quantized.onnx served at 34,472,226 bytes (= local); site root still 200. Headless live check (web-tests/live_check.mjs, real Wikipedia, 'tell me about octopuses'): model ready 7.1 s, answered with opener + 5 rewritten facts + closer, 13 reference links all to en.wikipedia.org, 0 console errors. Code: https://github.com/whysush/hollow (68 files, 2.1 MB; no data, checkpoints, or model files; no licence file, the owner's decision) |
 
 ## Next action
-Overnight chain `tools/pipeline.sh` (log logs/pipeline.log): waits for stage 1 -> samples -> wiki finalize -> teacher rewrites + openers -> merge -> stage 2 -> SFT -> eval. Then Phase 7 export (src/convert_hf.py + src/export_onnx.py in .venv-export, web-tests/phase7_check.mjs), Phase 8 final tests, Phase 9 deploy.
-(old) Phase 1: pip install (running), Ollama teacher pull from hf.co/bartowski/Qwen2.5-7B-Instruct-GGUF:Q4_K_M (registry.ollama.ai was ~176 KB/s).
+ALL PHASES DONE (2026-11-15). Live: https://whysush.github.io/hollow/  Code: https://github.com/whysush/hollow
+To update the site: rebuild with tools/build_site.sh export/models/hollow site, copy site/. into deploy/whysush.github.io/hollow/, commit, push.
+Known weakness: the 34M model sometimes garbles a word or repeats a phrase that the rule filter cannot detect (e.g. "julopuses").
 
 ## Phase notes
 - Phase 1 (2026-11-14 15:55): `optimum[onnxruntime]` dropped from the main install because it pins transformers<4.47 and made pip
@@ -58,3 +61,8 @@ Overnight chain `tools/pipeline.sh` (log logs/pipeline.log): waits for stage 1 -
   transformers.js 4.3.2 bug worked around: an http(s) `localModelPath` makes get_file_metadata skip local lookups, so the
   worker gets a root-relative path. Generation scores = mean NLL from one extra forward pass of the raw model.
 - Wikipedia fixtures were recorded with retries (the API rate-limited this IP while data_wiki.py was running).
+- Face (2026-11-15): replaced the earlier home-made raymarcher with a 1:1 port of the design handoff in
+  'Talking Face Animation/design_handoff_ascii_talking_face' (verified by web-tests/face_golden.mjs, 28/28 identical frames).
+  The handoff loops speech forever; in HOLLOW the timeline advances only while an answer is revealed (idle = closed mouth + blinks).
+  The handoff's Enter-clears-input behaviour is replaced by HOLLOW's ask flow; the input is 16px on touch devices (iOS zoom).
+
