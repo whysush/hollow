@@ -1,0 +1,20 @@
+# Never commit data, checkpoints, models, caches or environments (see README "Reproducing").
+data/
+ckpt/
+export/
+site/
+logs/
+tokenizer/
+.cache/
+.tmp/
+.venv*/
+tools/ollama/
+node_modules/
+web-tests/test-results/
+web/models/
+*.bin
+*.pt
+*.onnx
+*.safetensors
+*.gguf
+__pycache__/

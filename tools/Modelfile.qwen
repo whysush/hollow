@@ -1,0 +1,11 @@
+# Teacher: Qwen2.5-7B-Instruct (Apache-2.0), Q4_K_M GGUF (bartowski quant of the official weights).
+FROM ../.cache/gguf/Qwen2.5-7B-Instruct-Q4_K_M.gguf
+TEMPLATE """{{- if .System }}<|im_start|>system
+{{ .System }}<|im_end|>
+{{ end }}{{- range .Messages }}<|im_start|>{{ .Role }}
+{{ .Content }}<|im_end|>
+{{ end }}<|im_start|>assistant
+"""
+SYSTEM "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."
+PARAMETER stop "<|im_end|>"
+PARAMETER stop "<|endoftext|>"
