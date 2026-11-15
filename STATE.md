@@ -74,4 +74,11 @@ Known weakness: the 34M model sometimes garbles a word or repeats a phrase that 
 - Design tweaks (2026-11-15): face capped at 40% of the viewport height / 60% of the width (face.js heightFrac/widthFrac),
   still centred; the input box sits in a black bar fixed to the bottom of the screen (#dock); 'who are you' answers no
   longer mention wikipedia. Playwright 14/14; golden 28/28 unchanged.
+- Conversation layer (2026-11-15): app.js INTENTS answers everyday messages in character without a search: greetings,
+  how are you, thanks, bye, who made you ("i was made by Sushanth Yelishetty, a fourth year student from IIT Patna."
+  with links to github.com/whysush and the IIT Patna Wikipedia article), name, capabilities, age, alive, affection,
+  insults, short acknowledgements, time, date, simple arithmetic, who are you, who am i. Other conversational messages
+  ("can you help me...", "i am bored") get a nudge to name a subject instead of a search. extractTopic only drops a
+  greeting when punctuation or a question follows it ("hello kitty" searches "hello kitty"). Playwright 16/16.
+  Site for whysush.in is published from the gh-pages branch of whysush/hollow (CNAME whysush.in).
 

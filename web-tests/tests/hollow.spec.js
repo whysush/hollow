@@ -208,3 +208,24 @@ test("who are you / who am i are answered in character, no search", async ({ pag
   await ctx.shot("whoami");
   expect(ctx.errors).toEqual([]);
 });
+
+test("everyday conversation is answered without a search; who made you links the creator", async ({ page }, testInfo) => {
+  const ctx = await setup(page, testInfo);
+  const askDone = async (q) => {
+    await askAndWait(page, q);
+    await expect(page.locator("#q")).toBeDisabled();
+    await expect(page.locator("#q")).toBeEnabled({ timeout: 30_000 });
+    return (await page.locator("#answer").textContent()).trim();
+  };
+  expect(await askDone("hello")).not.toMatch(/greeting|word|expression/);      // not a dictionary answer
+  expect(await askDone("2+2")).toMatch(/^4\./);
+  const made = await askDone("who made you?");
+  expect(made).toBe("i was made by Sushanth Yelishetty, a fourth year student from IIT Patna.");
+  await expect(page.locator("#answer a", { hasText: "Sushanth Yelishetty" })).toHaveAttribute("href", "https://github.com/whysush");
+  await expect(page.locator("#answer a", { hasText: "IIT Patna" })).toHaveAttribute("href", "https://en.wikipedia.org/wiki/Indian_Institute_of_Technology_Patna");
+  await expect(page.locator("#answer a", { hasText: "IIT Patna" })).toHaveAttribute("target", "_blank");
+  await ctx.shot("whomade");
+  expect(await askDone("can you help me with my homework")).toMatch(/name a subject|ask me about a thing|give me a subject/);
+  expect(ctx.wikiCalls).toEqual([]);
+  expect(ctx.errors).toEqual([]);
+});
