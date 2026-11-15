@@ -95,6 +95,14 @@ test("answers a topic: mouth moves, every sentence has a valid reference", async
   // Thinking state screenshot.
   await page.waitForTimeout(600);
   expect(await page.evaluate(() => window.hollow.face.mode)).toBe("thinking");
+  // "(thinking.)" -> "(thinking..)" -> "(thinking...)" -> back to one dot.
+  const seen = new Set();
+  for (let i = 0; i < 16; i++) {
+    const t = (await page.locator("#answer").textContent()).trim();
+    if (t.startsWith("(thinking")) { expect(t).toMatch(/^\(thinking\.{1,3}\)$/); seen.add(t); }
+    await page.waitForTimeout(100);
+  }
+  expect([...seen].sort()).toEqual(["(thinking.)", "(thinking..)", "(thinking...)"]);
   await ctx.shot("thinking");
   // Wait for the reveal to start, then sample the mouth while text appears.
   await expect(page.locator("#answer .s").first()).toBeVisible({ timeout: 240_000 });
@@ -175,5 +183,24 @@ test("skip category is declined in character", async ({ page }, testInfo) => {
   await askAndWait(page, "tell me about the titanic sinking");
   await expect(page.locator("#answer")).toContainText("some things are not mine to make interesting", { timeout: 30_000 });
   await ctx.shot("skip");
+  expect(ctx.errors).toEqual([]);
+});
+
+test("who are you / who am i are answered in character, no search", async ({ page }, testInfo) => {
+  const ctx = await setup(page, testInfo);
+  await askAndWait(page, "who are you?");
+  await expect(page.locator("#answer")).toContainText(/hollow|i am the thing that reads/, { timeout: 30_000 });
+  await expect(page.locator("#q")).toBeEnabled({ timeout: 30_000 });
+  const who = (await page.locator("#answer").textContent()).trim();
+  expect(await page.locator("#answer a.ref").count()).toBe(0);
+  await ctx.shot("whoareyou");
+  await askAndWait(page, "who am i");
+  await expect(page.locator("#q")).toBeEnabled({ timeout: 30_000 });
+  const me = (await page.locator("#answer").textContent()).trim();
+  expect(me).not.toBe(who);
+  expect(me).toMatch(/\byou\b/);
+  expect(me).toBe(me.toLowerCase());
+  expect(ctx.wikiCalls).toEqual([]);
+  await ctx.shot("whoami");
   expect(ctx.errors).toEqual([]);
 });

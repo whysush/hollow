@@ -62,10 +62,14 @@ The filter checks that every name and number in the source survives and that no 
 
 The ASCII face is a 1:1 implementation of a design handoff ("ASCII Talking Face").
 
-- **Head:** an original head sculpted from signed-distance shapes and ray-marched once into a luminance grid.
+- **Head:** a licensed front-on portrait (`web/assets/face-ref2.png`) is cropped, its white background flood-filled to black, and the neck cut along a jawline curve. The result becomes a luminance grid, built once in a canvas.
 - **Animation:** each frame deforms that grid (jaw, lip shapes, brows, eyelids) and maps it to the ramp ` .,:;$$#%@`. It runs at a deliberately choppy 12 fps.
-- **Verification:** `web-tests/face_golden.mjs` renders the 28 golden frames from the handoff and string-compares them; all 28 are identical.
-- **Speech:** while hollow reveals an answer, the face plays the seeded speech timeline. When idle, it keeps its mouth closed and blinks.
+- **Verification:** `web-tests/face_golden.mjs` renders the 28 golden frames from the handoff in headless Chromium and string-compares them; all 28 are identical.
+- **Speech:** while hollow reveals an answer, the face plays the seeded speech timeline. When idle, it keeps its mouth closed and blinks. While hollow is looking things up, the answer area shows `(thinking.)`, `(thinking..)`, `(thinking...)` on a loop.
+
+## Talking about itself
+
+"who are you" (also "what are you", "tell me about yourself", "are you an ai") gets one of several fixed in-character answers about what hollow is, with its real numbers. "who am i" (also "do you know who i am") gets a philosophical one. Neither searches Wikipedia.
 
 ## Layout
 

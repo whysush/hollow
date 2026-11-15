@@ -65,4 +65,10 @@ Known weakness: the 34M model sometimes garbles a word or repeats a phrase that 
   'Talking Face Animation/design_handoff_ascii_talking_face' (verified by web-tests/face_golden.mjs, 28/28 identical frames).
   The handoff loops speech forever; in HOLLOW the timeline advances only while an answer is revealed (idle = closed mouth + blinks).
   The handoff's Enter-clears-input behaviour is replaced by HOLLOW's ask flow; the input is 16px on touch devices (iOS zoom).
+- Face v2 + features (2026-11-15 afternoon): the face is now a 1:1 port of the second handoff, 'Talking Face Animation(1).zip'
+  (photo-based: assets/face-ref2.png, crop 112,4,166,204, flood-fill background, jawline cut, A = 204/166). The owner
+  confirmed a licence for this stock image. Golden test now runs in headless Chromium (canvas): FACE_GOLDEN_OK 28/28.
+  Added: '(thinking.)' -> '(thinking..)' -> '(thinking...)' loop (400 ms) while busy; 'who are you' / 'who am i' fixed
+  in-character answers (app.js SELF, selfQuestion); the input is disabled while any fixed line is spoken.
+  Playwright: 14/14 (7 phone + 7 desktop). Commits in both repos are now authored as whysush (GitHub noreply address).
 
