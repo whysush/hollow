@@ -73,11 +73,14 @@ test("idle face renders, blinks and breathes", async ({ page }, testInfo) => {
   expect(/[@$#%]/.test(face)).toBeTruthy();                  // bright side of the face uses the dense characters
   expect(await page.locator("#face").getAttribute("aria-hidden")).toBe("true");
   expect(await page.locator("#answer").getAttribute("aria-live")).toBe("polite");
-  // Face sized by the handoff rule (innerHeight - 340 reserve, or 92% of the width) and centred in the viewport.
+  // Face sized to 40% of the viewport height (or 60% of the width, whichever is smaller) and centred in the viewport.
   const box = await page.locator("#face").boundingBox();
   const vh = page.viewportSize().height;
-  expect(box.height / vh).toBeGreaterThan(0.35);
-  expect(box.height / vh).toBeLessThan(0.62);
+  expect(box.height / vh).toBeGreaterThan(0.25);    // face kept to at most 40% of the screen height
+  expect(box.height / vh).toBeLessThan(0.41);
+  // The input box is pinned to the bottom of the screen (24 px above the bottom edge, plus any safe-area inset).
+  const ask = await page.locator("#ask").boundingBox();
+  expect(Math.abs(vh - (ask.y + ask.height) - 24)).toBeLessThan(2);
   const vw = page.viewportSize().width;
   expect(Math.abs(box.x + box.width / 2 - vw / 2)).toBeLessThan(2);    // horizontally centred
   expect(Math.abs(box.y + box.height / 2 - vh / 2)).toBeLessThan(2);   // vertically centred
@@ -192,6 +195,7 @@ test("who are you / who am i are answered in character, no search", async ({ pag
   await expect(page.locator("#answer")).toContainText(/hollow|i am the thing that reads/, { timeout: 30_000 });
   await expect(page.locator("#q")).toBeEnabled({ timeout: 30_000 });
   const who = (await page.locator("#answer").textContent()).trim();
+  expect(who).not.toMatch(/wikipedia/);
   expect(await page.locator("#answer a.ref").count()).toBe(0);
   await ctx.shot("whoareyou");
   await askAndWait(page, "who am i");

@@ -71,4 +71,7 @@ Known weakness: the 34M model sometimes garbles a word or repeats a phrase that 
   Added: '(thinking.)' -> '(thinking..)' -> '(thinking...)' loop (400 ms) while busy; 'who are you' / 'who am i' fixed
   in-character answers (app.js SELF, selfQuestion); the input is disabled while any fixed line is spoken.
   Playwright: 14/14 (7 phone + 7 desktop). Commits in both repos are now authored as whysush (GitHub noreply address).
+- Design tweaks (2026-11-15): face capped at 40% of the viewport height / 60% of the width (face.js heightFrac/widthFrac),
+  still centred; the input box sits in a black bar fixed to the bottom of the screen (#dock); 'who are you' answers no
+  longer mention wikipedia. Playwright 14/14; golden 28/28 unchanged.
 
